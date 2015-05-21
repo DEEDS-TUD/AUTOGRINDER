@@ -1,0 +1,263 @@
+<<<<<<< HEAD
+package de.grinder;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.restlet.Application;
+import org.restlet.Component;
+import org.restlet.Restlet;
+import org.restlet.data.Protocol;
+import org.restlet.routing.Router;
+
+import de.grinder.android_fi.EmulatedAndroid;
+import de.grinder.autosar.AutosarAbstraction;
+import de.grinder.util.cue.CUEAbstractionRegistry;
+
+/**
+ * The GRINDER server application.
+ * 
+ * GRINDER provides an REST API at port 8182. This class implements the HTTP
+ * server and the routing to subsystems.
+ * 
+ * @author Michael Tretter
+ * 
+ */
+public class Grinder extends Application {
+
+  private final static Logger LOGGER = LoggerFactory.getLogger(Grinder.class);
+
+  /**
+   * The default port of GRINDER.
+   */
+  private final static int PORT = 8182;
+
+  /**
+   * Starts GRINDER as server listening on port 8182.
+   * 
+   * @param args
+   *          not used
+   */
+  public static void main(final String[] args) {
+    /*
+     * TODO Implement port setup via command line arguments.
+     */
+    LOGGER.info("Starting GRINDER...");
+    
+    /*
+     * Register cue abstraction.
+     */
+    CUEAbstractionRegistry registry = CUEAbstractionRegistry.getInstance();
+    //registry.register(EmulatedAndroid.INFO);
+    registry.register(AutosarAbstraction.INFO);
+
+    try {
+      Component component = new Component();
+      component.getServers().add(Protocol.HTTP, PORT);
+      component.getDefaultHost().attach(new Grinder());
+      component.start();
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+
+  }
+
+  @Override
+  public synchronized Restlet createInboundRoot() {
+    Router router = new Router(getContext());
+    router.attach("/targets", TargetsResource.class);
+    router.attach("/targets/{target}", TargetResource.class);
+    router.attach("/campaigns", CampaignsResource.class);
+    router.attach("/campaigns/{id}", CampaignResource.class);
+    return router;
+  }
+}
+======= 
+
+
+
+<<<<<<< HEAD
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>grinder.server</artifactId>
+		<groupId>de.tu-darmstadt.informatik.deeds</groupId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>grinder.server.core</artifactId>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<!-- Ignore/Execute plugin execution -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<!-- copy-dependency plugin -->
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-dependency-plugin</artifactId>
+										<versionRange>[1.0.0,)</versionRange>
+										<goals>
+											<goal>copy-dependencies</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+				<plugin>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<configuration>
+						<archive>
+							<manifest>
+								<mainClass>de.grinder.Grinder</mainClass>
+							</manifest>
+						</archive>
+						<descriptorRefs>
+							<descriptorRef>jar-with-dependencies</descriptorRef>
+						</descriptorRefs>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.4</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/lib</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>de.grinder.Grinder</mainClass>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>lib/</classpathPrefix>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>maven-restlet</id>
+			<name>Public online Restlet repository</name>
+			<url>http://maven.restlet.org</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.10</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>1.9.0</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.6.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.6.6</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.ws.rs</groupId>
+			<artifactId>jsr311-api</artifactId>
+			<version>1.1-ea</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.restlet.jse</groupId>
+			<artifactId>org.restlet</artifactId>
+			<version>2.1.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.restlet.jse</groupId>
+			<artifactId>org.restlet.ext.xml</artifactId>
+			<version>2.1.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.restlet.jse</groupId>
+			<artifactId>org.restlet.ext.xstream</artifactId>
+			<version>2.1.1</version>
+		</dependency>
+
+		<!-- TODO server.core should not depend on ext.targetrunner -->
+		<dependency>
+			<groupId>de.tu-darmstadt.informatik.deeds</groupId>
+			<artifactId>grinder.server.ext.targetrunner</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+		<!-- TODO server.core should not depend on ext.database -->
+		<dependency>
+			<groupId>de.tu-darmstadt.informatik.deeds</groupId>
+			<artifactId>grinder.server.ext.database</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.tu-darmstadt.informatik.deeds</groupId>
+			<artifactId>grinder.demo.android_fi</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		
+		<dependency>
+      <groupId>de.tu-darmstadt.informatik.deeds</groupId>
+      <artifactId>grinder.demo.autosar</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+	</dependencies>
+</project>
+=======
